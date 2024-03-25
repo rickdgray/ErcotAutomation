@@ -6,6 +6,9 @@ Attribute VB_Name = "CSVUtils"
 ' License MIT (http://www.opensource.org/licenses/mit-license.php)
 ' Document: https://github.com/sdkn104/VBA-CSV/README.md
 '
+
+'@Folder("Utilities")
+
 Option Explicit
 
 

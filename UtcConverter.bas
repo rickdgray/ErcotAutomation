@@ -15,6 +15,9 @@ Attribute VB_Name = "UtcConverter"
 ' @author tim.hall.engr@gmail.com, hecon5
 ' @license MIT (http://www.opensource.org/licenses/mit-license.php)
 '' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '
+
+'@Folder("Utilities")
+
 Option Compare Text
 Option Explicit
 
@@ -361,7 +364,7 @@ End Function
 ' Parse ISO 8601 date string to local date
 '
 ' @method ParseIso
-' @param {Date} utc_IsoString
+' @param {String} utc_IsoString
 ' @return {Date} Local date
 ' @throws 10013 - ISO 8601 parsing error
 '

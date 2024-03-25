@@ -60,7 +60,7 @@ Private Function FetchAllErcotDocs(ByVal reportTypeId As String) As Collection
     Set FetchAllErcotDocs = documents
 End Function
 
-Private Sub DownloadZip(ByVal DocId As String, ByVal FileName As String)
+Private Sub DownloadZip(ByVal DocId As String, ByVal filename As String)
     Dim file As Object
     Set file = CreateObject("Scripting.FileSystemObject")
     
@@ -80,7 +80,7 @@ Private Sub DownloadZip(ByVal DocId As String, ByVal FileName As String)
             .Open
             .Type = 1
             .Write Client.ResponseBody
-            .SaveToFile Environ$("AppData") & "\ErcotDocumentCache\" & FileName, 2
+            .SaveToFile Environ$("AppData") & "\ErcotDocumentCache\" & filename, 2
             .Close
         End With
     Else
@@ -117,7 +117,8 @@ Private Sub ClearErcotDocumentCache()
 End Sub
 
 Private Function ConvertIsoTimestamp(ByVal value As String) As Date
-    ConvertIsoTimestamp = JsonConverter.ParseIso(value)
+    'Wrapper function to handle pass by value
+    ConvertIsoTimestamp = UtcConverter.ParseISOTimeStampToUTC(value)
 End Function
 
 Private Function GetFileExtension(ByVal Name As String) As String
