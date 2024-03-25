@@ -7,10 +7,10 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
+'@Folder("ErcotAutomation")
 Option Explicit
 
-'Class Module: ErcotDocument
 Public ConstructedName As String
-Public FriendlyName As String
 Public DocId As String
-Public PublishedDate As Date
+Public PublishDate As Date
+
