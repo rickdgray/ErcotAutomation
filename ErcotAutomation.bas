@@ -1,8 +1,9 @@
 Attribute VB_Name = "ErcotAutomation"
+'@IgnoreModule IndexedDefaultMemberAccess, IndexedUnboundDefaultMemberAccess
 '@Folder("ErcotAutomation")
 Option Explicit
 
-Sub UpdatePrices()
+Public Sub UpdatePrices()
     Dim documents As New Collection
     Set documents = FetchAllErcotDocs("12301")
     
@@ -108,10 +109,10 @@ Private Sub ClearErcotDocumentCache()
     Dim file As Scripting.FileSystemObject
     Set file = New Scripting.FileSystemObject
     
-    Dim f As file
+    Dim currentFile As file
     If file.FolderExists((Environ$("AppData") & "\ErcotDocumentCache\")) Then
-        For Each f In file.GetFolder((Environ$("AppData") & "\ErcotDocumentCache\")).Files
-            f.Delete True
+        For Each currentFile In file.GetFolder((Environ$("AppData") & "\ErcotDocumentCache\")).Files
+            currentFile.Delete True
         Next
     End If
 End Sub

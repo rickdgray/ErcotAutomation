@@ -1,4 +1,5 @@
 Attribute VB_Name = "ErcotTests"
+'@IgnoreModule IndexedUnboundDefaultMemberAccess
 '@TestModule
 '@Folder("Tests")
 

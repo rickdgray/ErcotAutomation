@@ -7,8 +7,8 @@ Attribute VB_Name = "CSVUtils"
 ' Document: https://github.com/sdkn104/VBA-CSV/README.md
 '
 
+'@IgnoreModule
 '@Folder("Utilities")
-
 Option Explicit
 
 

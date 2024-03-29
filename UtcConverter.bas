@@ -16,8 +16,8 @@ Attribute VB_Name = "UtcConverter"
 ' @license MIT (http://www.opensource.org/licenses/mit-license.php)
 '' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '
 
+'@IgnoreModule
 '@Folder("Utilities")
-
 Option Compare Text
 Option Explicit
 

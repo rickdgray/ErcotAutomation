@@ -44,8 +44,8 @@ Attribute VB_Name = "JsonConverter"
 ' SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ '
 
+'@IgnoreModule
 '@Folder("Utilities")
-
 Option Explicit
 
 ' === VBA-UTC Headers
