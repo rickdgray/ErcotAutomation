@@ -61,8 +61,8 @@ Private Function FetchAllErcotDocs(ByVal reportTypeId As String) As Collection
 End Function
 
 Private Sub DownloadZip(ByVal DocId As String, ByVal filename As String)
-    Dim file As Object
-    Set file = CreateObject("Scripting.FileSystemObject")
+    Dim file As Scripting.FileSystemObject
+    Set file = New Scripting.FileSystemObject
     
     If Not (file.FolderExists(Environ$("AppData") & "\ErcotDocumentCache\")) Then
         MkDir Environ$("AppData") & "\ErcotDocumentCache\"
@@ -105,8 +105,8 @@ Private Sub UnzipAllFilesInFolder(ByVal path As String)
 End Sub
 
 Private Sub ClearErcotDocumentCache()
-    Dim file As Object
-    Set file = CreateObject("Scripting.FileSystemObject")
+    Dim file As Scripting.FileSystemObject
+    Set file = New Scripting.FileSystemObject
     
     Dim f As file
     If file.FolderExists((Environ$("AppData") & "\ErcotDocumentCache\")) Then
