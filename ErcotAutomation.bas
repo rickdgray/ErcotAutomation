@@ -29,6 +29,8 @@ Public Sub UpdatePrices()
     
     UnzipAllFilesInFolder Environ$("AppData") & "\ErcotDocumentCache\"
     
+    ParseCsvPriceTables
+    
     ClearErcotDocumentCache
 End Sub
 
@@ -104,6 +106,37 @@ Private Sub UnzipAllFilesInFolder(ByVal path As String)
         winShell.Namespace(path).CopyHere winShell.Namespace(zipItem).Items.Item(0)
     Next i
 End Sub
+
+Private Function ParseCsvPriceTables() As Object
+    Dim filename As String
+    filename = "cdr.00012301.0000000000000000.20240329.010211.SPPHLZNP6905_20240329_0100.csv"
+    
+    Dim file As Scripting.FileSystemObject
+    Set file = New Scripting.FileSystemObject
+    
+    Dim csvStream As TextStream
+    Set csvStream = file.OpenTextFile(Environ$("AppData") & "\ErcotDocumentCache\" & filename, ForReading)
+    
+    Dim csv As String
+    csv = csvStream.ReadAll
+    
+    Dim csvd As Object
+    Set csvd = CSVUtils.ParseCSVToDictionary(csv, 4)
+    
+    Dim priceTables As New Collection
+    
+    Dim priceTable As New ErcotPriceTable
+    Set priceTable = New ErcotPriceTable
+    priceTable.DeliveryDate = CDate(csvd("AMOCO_PUN1")(1))
+    priceTable.DeliveryHour = csvd("AMOCO_PUN1")(2)
+    priceTable.DeliveryInternal = csvd("AMOCO_PUN1")(3)
+    priceTable.SettlementPointName = csvd("AMOCO_PUN1")(4)
+    priceTable.SettlementPointType = csvd("AMOCO_PUN1")(5)
+    priceTable.SettlementPointPrice = CDec(csvd("AMOCO_PUN1")(6))
+    priceTable.DSTFlag = StrComp(csvd("AMOCO_PUN1")(7), "Y", vbTextCompare) = 0
+    
+    priceTables.Add priceTable
+End Function
 
 Private Sub ClearErcotDocumentCache()
     Dim file As Scripting.FileSystemObject
