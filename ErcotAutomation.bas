@@ -29,7 +29,20 @@ Public Sub UpdatePrices()
     
     UnzipAllFilesInFolder Environ$("AppData") & "\ErcotDocumentCache\"
     
-    ParseCsvPriceTables
+    Dim cvcCc1PriceTable As Collection
+    Set cvcCc1PriceTable = ParseCsvFilesToPriceTable("CVC_CC1")
+    
+    Dim hbHoustonPriceTable As Collection
+    Set hbHoustonPriceTable = ParseCsvFilesToPriceTable("HB_HOUSTON")
+    
+    Dim lhmCvcG4PriceTable As Collection
+    Set lhmCvcG4PriceTable = ParseCsvFilesToPriceTable("LHM_CVC_G4")
+    
+    Dim cvcCc1AveragePrices As New Dictionary
+    Dim cvcCc1PriceRecord As ErcotPriceRecord
+    For Each cvcCc1PriceRecord In cvcCc1PriceTable
+        Set cvcCc1AveragePrices(cvcCc1PriceRecord.DeliveryDate & cvcCc1PriceRecord.DeliveryHour) = cvcCc1PriceRecord.SettlementPointPrice
+    Next cvcCc1PriceRecord
     
     ClearErcotDocumentCache
 End Sub
@@ -107,35 +120,39 @@ Private Sub UnzipAllFilesInFolder(ByVal path As String)
     Next i
 End Sub
 
-Private Function ParseCsvPriceTables() As Object
-    Dim filename As String
-    filename = "cdr.00012301.0000000000000000.20240329.010211.SPPHLZNP6905_20240329_0100.csv"
-    
+Public Function ParseCsvFilesToPriceTable(ByVal name As String) As Collection
     Dim file As Scripting.FileSystemObject
     Set file = New Scripting.FileSystemObject
     
-    Dim csvStream As TextStream
-    Set csvStream = file.OpenTextFile(Environ$("AppData") & "\ErcotDocumentCache\" & filename, ForReading)
+    Dim priceTable As New Collection
     
-    Dim csv As String
-    csv = csvStream.ReadAll
+    Dim currentFile As file
+    If file.FolderExists((Environ$("AppData") & "\ErcotDocumentCache\")) Then
+        For Each currentFile In file.GetFolder((Environ$("AppData") & "\ErcotDocumentCache\")).Files
+            If GetFileExtension(currentFile.path) = "csv" Then
+                Dim csvStream As TextStream
+                Set csvStream = file.OpenTextFile(currentFile.path, ForReading)
+                
+                Dim csv As String
+                csv = csvStream.ReadAll
+                
+                Dim csvd As Object
+                Set csvd = CSVUtils.ParseCSVToDictionary(csv, 4)
+                
+                Dim priceRecord As New ErcotPriceRecord
+                Set priceRecord = New ErcotPriceRecord
+                priceRecord.DeliveryDate = CDate(csvd(name)(1))
+                priceRecord.DeliveryHour = csvd(name)(2)
+                priceRecord.DeliveryInterval = csvd(name)(3)
+                priceRecord.SettlementPointName = csvd(name)(4)
+                priceRecord.SettlementPointPrice = CDec(csvd(name)(6))
+                
+                priceTable.Add priceRecord
+            End If
+        Next
+    End If
     
-    Dim csvd As Object
-    Set csvd = CSVUtils.ParseCSVToDictionary(csv, 4)
-    
-    Dim priceTables As New Collection
-    
-    Dim priceTable As New ErcotPriceTable
-    Set priceTable = New ErcotPriceTable
-    priceTable.DeliveryDate = CDate(csvd("AMOCO_PUN1")(1))
-    priceTable.DeliveryHour = csvd("AMOCO_PUN1")(2)
-    priceTable.DeliveryInternal = csvd("AMOCO_PUN1")(3)
-    priceTable.SettlementPointName = csvd("AMOCO_PUN1")(4)
-    priceTable.SettlementPointType = csvd("AMOCO_PUN1")(5)
-    priceTable.SettlementPointPrice = CDec(csvd("AMOCO_PUN1")(6))
-    priceTable.DSTFlag = StrComp(csvd("AMOCO_PUN1")(7), "Y", vbTextCompare) = 0
-    
-    priceTables.Add priceTable
+    Set ParseCsvFilesToPriceTable = priceTable
 End Function
 
 Private Sub ClearErcotDocumentCache()
@@ -155,7 +172,10 @@ Private Function ConvertIsoTimestamp(ByVal value As String) As Date
     ConvertIsoTimestamp = UtcConverter.ParseISOTimeStampToUTC(value)
 End Function
 
-Private Function GetFileExtension(ByVal Name As String) As String
-    GetFileExtension = Mid$(Name, Len(Name) - 2, 3)
+Private Function GetFileExtension(ByVal name As String) As String
+    GetFileExtension = Mid$(name, Len(name) - 2, 3)
 End Function
 
+Private Function StringEquals(ByVal a As String, ByVal b As String) As Boolean
+    StringEquals = StrComp(a, b, vbTextCompare) = 0
+End Function

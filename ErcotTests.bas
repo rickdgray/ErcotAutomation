@@ -62,6 +62,32 @@ TestFail:
 End Sub
 
 '@TestMethod("Uncategorized")
+Private Sub ParseCsvToPriceTable_GetCollectionFromCsvSuccess()
+    On Error GoTo TestFail
+    'Arrange:
+    
+    'Act:
+    Dim priceTable As Collection
+    Set priceTable = ErcotAutomation.ParseCsvToPriceTable("CVC_CC1")
+    
+    Dim priceRecord As ErcotPriceRecord
+    For Each priceRecord In priceTable
+        Debug.Print priceRecord.SettlementPointName
+        Debug.Print priceRecord.SettlementPointPrice
+    Next priceRecord
+    
+    'Assert:
+    Assert.Succeed
+TestExit:
+    '@Ignore UnhandledOnErrorResumeNext
+    On Error Resume Next
+    Exit Sub
+TestFail:
+    Assert.Fail "Failed to parse CSV file: #" & Err.Number & " - " & Err.Description
+    Resume TestExit
+End Sub
+
+'@TestMethod("Uncategorized")
 Private Sub ErcotAutomation_FullRunReturnsSuccess()
     On Error GoTo TestFail
     'Arrange:
