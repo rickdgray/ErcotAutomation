@@ -4,6 +4,8 @@ Attribute VB_Name = "ErcotAutomation"
 Option Explicit
 
 Public Sub UpdatePrices()
+    ClearErcotDocumentCache
+    
     Dim documents As New Collection
     Set documents = FetchAllErcotDocs("12301")
     
@@ -38,11 +40,38 @@ Public Sub UpdatePrices()
     Dim lhmCvcG4PriceTable As Collection
     Set lhmCvcG4PriceTable = ParseCsvFilesToPriceTable("LHM_CVC_G4")
     
-    Dim cvcCc1AveragePrices As New Dictionary
+    Dim today As String
+    today = Format$(Date, "yyyy-mm-dd")
+    Dim mostRecentHour As Long
+    Dim mostRecentHourKey As String
+    mostRecentHourKey = vbNullString
+    
+    Dim cvcCc1AccumulatedPrices As New Dictionary
     Dim cvcCc1PriceRecord As ErcotPriceRecord
     For Each cvcCc1PriceRecord In cvcCc1PriceTable
-        Set cvcCc1AveragePrices(cvcCc1PriceRecord.DeliveryDate & cvcCc1PriceRecord.DeliveryHour) = cvcCc1PriceRecord.SettlementPointPrice
+        'Need to track the most recent hour on the way for later
+        If cvcCc1PriceRecord.DeliveryDate = Date And cvcCc1PriceRecord.DeliveryHour > mostRecentHour Then
+            mostRecentHour = cvcCc1PriceRecord.DeliveryHour
+            mostRecentHourKey = cvcCc1PriceRecord.DeliveryDate & cvcCc1PriceRecord.DeliveryHour
+        End If
+        
+        AccumulateOnDict cvcCc1PriceRecord.DeliveryDate & cvcCc1PriceRecord.DeliveryHour, cvcCc1PriceRecord.SettlementPointPrice, cvcCc1AccumulatedPrices
     Next cvcCc1PriceRecord
+    
+    Dim cvcCc1AveragePrices As New Dictionary
+    Dim values As Collection
+    Dim key As Variant
+    For Each key In cvcCc1AccumulatedPrices.Keys
+        'Make sure we got all 4 intervals unless most recent hour
+        If cvcCc1AccumulatedPrices(key).Count = 4 Then
+            cvcCc1AveragePrices(key) = CollectionSum(cvcCc1AccumulatedPrices(key)) / 4
+        End If
+        
+        'Also get the intervals right now, as this hour hasn't completed
+        If key = mostRecentHourKey Then
+            cvcCc1AveragePrices(key) = CollectionSum(cvcCc1AccumulatedPrices(key)) / 4
+        End If
+    Next
     
     ClearErcotDocumentCache
 End Sub
@@ -165,6 +194,23 @@ Private Sub ClearErcotDocumentCache()
             currentFile.Delete True
         Next
     End If
+End Sub
+
+Private Function CollectionSum(ByRef col As Collection) As Variant
+    CollectionSum = 0
+    
+    Dim val As Variant
+    For Each val In col
+        CollectionSum = CollectionSum + val
+    Next
+End Function
+
+Private Sub AccumulateOnDict(ByVal key As String, ByVal value As Variant, ByRef dict As Dictionary)
+    If dict.Exists(key) = False Then
+        Set dict(key) = New Collection
+    End If
+    
+    dict(key).Add value
 End Sub
 
 Private Function ConvertIsoTimestamp(ByVal value As String) As Date
