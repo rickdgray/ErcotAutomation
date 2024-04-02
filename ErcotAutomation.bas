@@ -62,14 +62,14 @@ Public Sub UpdatePrices()
     Dim values As Collection
     Dim key As Variant
     For Each key In cvcCc1AccumulatedPrices.Keys
-        'Make sure we got all 4 intervals unless most recent hour
+        'Make sure we got all 4 intervals
         If cvcCc1AccumulatedPrices(key).Count = 4 Then
             cvcCc1AveragePrices(key) = CollectionSum(cvcCc1AccumulatedPrices(key)) / 4
         End If
         
         'Also get the intervals right now, as this hour hasn't completed
         If key = mostRecentHourKey Then
-            cvcCc1AveragePrices(key) = CollectionSum(cvcCc1AccumulatedPrices(key)) / 4
+            cvcCc1AveragePrices(key) = CollectionSum(cvcCc1AccumulatedPrices(key)) / cvcCc1AccumulatedPrices(key).Count
         End If
     Next
     
