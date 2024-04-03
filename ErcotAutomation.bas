@@ -40,35 +40,34 @@ Public Sub UpdatePrices()
     Dim lhmCvcG4PriceTable As Collection
     Set lhmCvcG4PriceTable = ParseCsvFilesToPriceTable("LHM_CVC_G4")
     
-    Dim mostRecentHour As Long
-    Dim mostRecentHourKey As String
-    mostRecentHourKey = vbNullString
-    
-    Dim cvcCc1AccumulatedPrices As New Dictionary
-    Dim cvcCc1PriceRecord As ErcotPriceRecord
-    For Each cvcCc1PriceRecord In cvcCc1PriceTable
-        'Need to track the most recent hour on the way for later
-        If cvcCc1PriceRecord.DeliveryDate = Date And cvcCc1PriceRecord.DeliveryHour > mostRecentHour Then
-            mostRecentHour = cvcCc1PriceRecord.DeliveryHour
-            mostRecentHourKey = cvcCc1PriceRecord.DeliveryDate & cvcCc1PriceRecord.DeliveryHour
-        End If
-        
-        AccumulateOnDict cvcCc1PriceRecord.DeliveryDate & cvcCc1PriceRecord.DeliveryHour, cvcCc1PriceRecord.SettlementPointPrice, cvcCc1AccumulatedPrices
-    Next cvcCc1PriceRecord
-    
-    Dim cvcCc1AveragePrices As New Dictionary
     Dim key As Variant
-    For Each key In cvcCc1AccumulatedPrices.Keys
-        'Make sure we got all 4 intervals
-        If cvcCc1AccumulatedPrices(key).Count = 4 Then
-            cvcCc1AveragePrices(key) = CollectionSum(cvcCc1AccumulatedPrices(key)) / 4
+    Dim sheet As Worksheet
+    Set sheet = ActiveWorkbook.Sheets("Sheet1")
+    Dim cell As Range
+    Dim row As Long
+    row = 2
+    
+    Dim cvcCc1AveragePrices As Dictionary
+    Set cvcCc1AveragePrices = AccumulateAndAverageAllPricesByHour(cvcCc1PriceTable)
+    
+    Dim hoursList As Dictionary
+    Set hoursList = BuildHoursList(startDate)
+    
+    For Each key In hoursList.Keys
+        If cvcCc1AveragePrices.Exists(key) = True Then
+            Set cell = sheet.Range("A" & row)
+            cell.value = hoursList(key)
+            Set cell = sheet.Range("B" & row)
+            cell.value = cvcCc1AveragePrices(key)
         End If
-        
-        'Also get the intervals right now, as this hour hasn't completed
-        If key = mostRecentHourKey Then
-            cvcCc1AveragePrices(key) = CollectionSum(cvcCc1AccumulatedPrices(key)) / cvcCc1AccumulatedPrices(key).Count
-        End If
+        row = row + 1
     Next
+    
+    Dim hbHoustonAveragePrices As Dictionary
+    Set hbHoustonAveragePrices = AccumulateAndAverageAllPricesByHour(hbHoustonPriceTable)
+    
+    Dim lhmCvcG4AveragePrices As Dictionary
+    Set lhmCvcG4AveragePrices = AccumulateAndAverageAllPricesByHour(lhmCvcG4PriceTable)
     
     ClearErcotDocumentCache
 End Sub
@@ -178,6 +177,57 @@ Public Function ParseCsvFilesToPriceTable(ByVal name As String) As Collection
     End If
     
     Set ParseCsvFilesToPriceTable = priceTable
+End Function
+
+Private Function AccumulateAndAverageAllPricesByHour(ByVal priceTable As Collection) As Dictionary
+    Dim mostRecentHour As Long
+    Dim mostRecentHourKey As String
+    mostRecentHourKey = vbNullString
+    
+    Dim accumulatedPrices As New Dictionary
+    Dim priceRecord As ErcotPriceRecord
+    For Each priceRecord In priceTable
+        'Need to track the most recent hour on the way for later
+        If priceRecord.DeliveryDate = Date And priceRecord.DeliveryHour > mostRecentHour Then
+            mostRecentHour = priceRecord.DeliveryHour
+            mostRecentHourKey = priceRecord.DeliveryDate & priceRecord.DeliveryHour
+        End If
+        
+        AccumulateOnDict priceRecord.DeliveryDate & priceRecord.DeliveryHour, priceRecord.SettlementPointPrice, accumulatedPrices
+    Next priceRecord
+    
+    Dim averagePrices As New Dictionary
+    Dim key As Variant
+    For Each key In accumulatedPrices.Keys
+        'Make sure we got all 4 intervals and also get the intervals right now,
+        'as this hour hasn't completed
+        If accumulatedPrices(key).Count = 4 Or key = mostRecentHourKey Then
+            averagePrices(key) = CollectionSum(accumulatedPrices(key)) / accumulatedPrices(key).Count
+        End If
+    Next
+    
+    Set AccumulateAndAverageAllPricesByHour = averagePrices
+End Function
+
+Private Function BuildHoursList(ByVal currentDate As Date) As Dictionary
+    Dim hoursList As New Dictionary
+    Dim i As Long
+    
+    For i = 1 To 24
+        hoursList(Format$(currentDate, "yyyy-mm-dd") & i) = Format$(currentDate, "yyyy-mm-dd") & " Hour: " & i
+    Next i
+    currentDate = DateAdd("d", 1, currentDate)
+    
+    For i = 1 To 24
+        hoursList(Format$(currentDate, "yyyy-mm-dd") & i) = Format$(currentDate, "yyyy-mm-dd") & " Hour: " & i
+    Next i
+    currentDate = DateAdd("d", 1, currentDate)
+    
+    For i = 1 To 24
+        hoursList(Format$(currentDate, "yyyy-mm-dd") & i) = Format$(currentDate, "yyyy-mm-dd") & " Hour: " & i
+    Next i
+    
+    Set BuildHoursList = hoursList
 End Function
 
 Private Sub ClearErcotDocumentCache()
