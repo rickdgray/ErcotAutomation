@@ -7,12 +7,12 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
+'@IgnoreModule EncapsulatePublicField
 '@Folder("ErcotAutomation")
 Option Explicit
 
 Public DeliveryDate As Date
 Public DeliveryHour As Long
-Public DeliveryInterval As Long
 Public SettlementPointName As String
 Public SettlementPointPrice As Variant 'Decimal
 

@@ -1,5 +1,5 @@
 Attribute VB_Name = "ErcotAutomation"
-'@IgnoreModule IndexedDefaultMemberAccess, IndexedUnboundDefaultMemberAccess
+'@IgnoreModule UseMeaningfulName, SelfAssignedDeclaration, IndexedDefaultMemberAccess, IndexedUnboundDefaultMemberAccess
 '@Folder("ErcotAutomation")
 Option Explicit
 
@@ -40,8 +40,6 @@ Public Sub UpdatePrices()
     Dim lhmCvcG4PriceTable As Collection
     Set lhmCvcG4PriceTable = ParseCsvFilesToPriceTable("LHM_CVC_G4")
     
-    Dim today As String
-    today = Format$(Date, "yyyy-mm-dd")
     Dim mostRecentHour As Long
     Dim mostRecentHourKey As String
     mostRecentHourKey = vbNullString
@@ -59,7 +57,6 @@ Public Sub UpdatePrices()
     Next cvcCc1PriceRecord
     
     Dim cvcCc1AveragePrices As New Dictionary
-    Dim values As Collection
     Dim key As Variant
     For Each key In cvcCc1AccumulatedPrices.Keys
         'Make sure we got all 4 intervals
@@ -172,7 +169,6 @@ Public Function ParseCsvFilesToPriceTable(ByVal name As String) As Collection
                 Set priceRecord = New ErcotPriceRecord
                 priceRecord.DeliveryDate = CDate(csvd(name)(1))
                 priceRecord.DeliveryHour = csvd(name)(2)
-                priceRecord.DeliveryInterval = csvd(name)(3)
                 priceRecord.SettlementPointName = csvd(name)(4)
                 priceRecord.SettlementPointPrice = CDec(csvd(name)(6))
                 
@@ -222,6 +218,3 @@ Private Function GetFileExtension(ByVal name As String) As String
     GetFileExtension = Mid$(name, Len(name) - 2, 3)
 End Function
 
-Private Function StringEquals(ByVal a As String, ByVal b As String) As Boolean
-    StringEquals = StrComp(a, b, vbTextCompare) = 0
-End Function
