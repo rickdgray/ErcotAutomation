@@ -50,6 +50,12 @@ Public Sub UpdatePrices()
     Dim cvcCc1AveragePrices As Dictionary
     Set cvcCc1AveragePrices = AccumulateAndAverageAllPricesByHour(cvcCc1PriceTable)
     
+    Dim hbHoustonAveragePrices As Dictionary
+    Set hbHoustonAveragePrices = AccumulateAndAverageAllPricesByHour(hbHoustonPriceTable)
+    
+    Dim lhmCvcG4AveragePrices As Dictionary
+    Set lhmCvcG4AveragePrices = AccumulateAndAverageAllPricesByHour(lhmCvcG4PriceTable)
+    
     Dim hoursList As Dictionary
     Set hoursList = BuildHoursList(startDate)
     
@@ -59,15 +65,13 @@ Public Sub UpdatePrices()
             cell.value = hoursList(key)
             Set cell = sheet.Range("B" & row)
             cell.value = cvcCc1AveragePrices(key)
+            Set cell = sheet.Range("C" & row)
+            cell.value = hbHoustonAveragePrices(key)
+            Set cell = sheet.Range("D" & row)
+            cell.value = lhmCvcG4AveragePrices(key)
+            row = row + 1
         End If
-        row = row + 1
     Next
-    
-    Dim hbHoustonAveragePrices As Dictionary
-    Set hbHoustonAveragePrices = AccumulateAndAverageAllPricesByHour(hbHoustonPriceTable)
-    
-    Dim lhmCvcG4AveragePrices As Dictionary
-    Set lhmCvcG4AveragePrices = AccumulateAndAverageAllPricesByHour(lhmCvcG4PriceTable)
     
     ClearErcotDocumentCache
 End Sub
@@ -209,7 +213,9 @@ Private Function AccumulateAndAverageAllPricesByHour(ByVal priceTable As Collect
     Set AccumulateAndAverageAllPricesByHour = averagePrices
 End Function
 
-Private Function BuildHoursList(ByVal currentDate As Date) As Dictionary
+Private Function BuildHoursList(ByVal startingDate As Date) As Dictionary
+    Dim currentDate As Date
+    currentDate = startingDate
     Dim hoursList As New Dictionary
     Dim i As Long
     
@@ -221,6 +227,9 @@ Private Function BuildHoursList(ByVal currentDate As Date) As Dictionary
     For i = 1 To 24
         hoursList(Format$(currentDate, "yyyy-mm-dd") & i) = Format$(currentDate, "yyyy-mm-dd") & " Hour: " & i
     Next i
+    
+    '@Ignore AssignmentNotUsed
+    'false positive
     currentDate = DateAdd("d", 1, currentDate)
     
     For i = 1 To 24
